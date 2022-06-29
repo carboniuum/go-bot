@@ -9,34 +9,29 @@ import (
 )
 
 func GetScreenshot() tgbotapi.FileBytes {
-	img, err := screenshot.CaptureScreen()
-	
-	if (err == nil) {
-		f, err := os.Create("img.jpg")
-
-		if err != nil {
-			panic(err)
-		}
-
-		defer f.Close()
-
-		err = jpeg.Encode(f, img, nil)
-
-		if err != nil {
-			panic(err)
-		}
+	img, imgErr := screenshot.CaptureScreen()	
+	if (imgErr != nil) {
+		panic(imgErr)
 	}
 
-	photoBytes, err := ioutil.ReadFile("img.jpg")
-		
+	file, fileErr := os.Create("img.jpg")
+	if fileErr != nil {
+		panic(fileErr)
+	}
+	defer file.Close()
+
+	encodeErr := jpeg.Encode(file, img, nil)
+	if encodeErr != nil {
+		panic(encodeErr)
+	}
+
+	photoBytes, err := ioutil.ReadFile("img.jpg")	
 	if err != nil {
 		panic(err)
 	}
 		
-	photoFileBytes := tgbotapi.FileBytes {
+	return tgbotapi.FileBytes {
 		Name:  "picture",
 		Bytes: photoBytes,
 	}
-
-	return photoFileBytes
 }

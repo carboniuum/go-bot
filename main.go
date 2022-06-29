@@ -1,12 +1,22 @@
 package main
 
 import (
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"bufio"
+	"errors"
+	"fmt"
 	actions "go-bot/bot"
 	"log"
+	"os"
+	"strings"
+
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
+var PATH string = "userinfo.txt"
+
 func main() {
+	initialize()
+
 	bot, err := tgbotapi.NewBotAPI("5355590688:AAE8PjtaCNSugTQW3_R0CftpFpudCyB3fR0")
 
 	if err != nil {
@@ -39,5 +49,29 @@ func main() {
 
 			bot.Send(msg)
 		}
+	}
+}
+
+func initialize() {
+	if _, err := os.Stat(PATH); errors.Is(err, os.ErrNotExist) {
+		reader := bufio.NewReader(os.Stdin)
+		fmt.Print("Enter your telegram user id: ")
+		userId, _ := reader.ReadString('\n')
+		fmt.Print("Enter your telegram bot api token: ")
+		token, _ := reader.ReadString('\n')
+
+		file, fileErr := os.Create(PATH)
+
+		if fileErr != nil {
+			panic(fileErr)
+		}
+
+		defer file.Close()
+
+		_, ioErr := file.WriteString(strings.TrimSpace(userId) + "\n" + strings.TrimSpace(token))
+
+		if ioErr != nil {
+			panic(ioErr)
+		}	
 	}
 }
